@@ -1,23 +1,201 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  /** Optional: override canonical URL (defaults to current path + site) */
+  canonicalPath?: string;
+  /** Optional: image URL for Open Graph / Twitter (absolute URL) */
+  ogImage?: string;
+}
+
+const {
+  title,
+  description = "Personal portfolio — projects, writing, and experience.",
+  canonicalPath,
+  ogImage,
+} = Astro.props;
+import { site } from "../data/portfolio";
+
+const path = canonicalPath ?? Astro.url.pathname;
+const canonicalUrl = Astro.site ? new URL(path, Astro.site).href : null;
+const ogImageUrl =
+  ogImage ?? (Astro.site ? new URL("/favicon.svg", Astro.site).href : null);
+---
+
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    <meta property="og:locale" content="en_US" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+    <meta name="generator" content={Astro.generator} />
+    {/* Person schema for portfolio (E-E-A-T / rich results) */}
+    {
+      Astro.site && (
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Person",
+            name: site.name,
+            url: Astro.site,
+            email: site.email,
+            description: description,
+          })}
+        />
+      )
+    }
+  </head>
+  <body>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p class="footer-copy">
+          Last updated on {site.lastUpdated}. I can be reached at <a
+            href={`mailto:${site.email}`}>{site.email}</a
+          >.
+        </p>
+        <p class="footer-copy footer-legal">
+          © {new Date().getFullYear()}
+          {site.name}
+        </p>
+      </div>
+    </footer>
+  </body>
 </html>
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
+<style is:global>
+  :root {
+    --font-display: "Lora", Georgia, serif;
+    --font-body: "Lora", Georgia, serif;
+    --font-ui: "DM Sans", system-ui, sans-serif;
+
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 2rem;
+    --text-4xl: 2.5rem;
+
+    /* Spacing */
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    --space-20: 5rem;
+    --space-24: 6rem;
+
+    --color-bg: #fff;
+    --color-fg: #111;
+    --color-muted: #555;
+    --color-accent: #111;
+    --color-accent-soft: #f0f0f0;
+    --color-border: #ddd;
+
+    --content-width: 56rem;
+    --radius: 4px;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body > header {
+    flex-shrink: 0;
+    width: 100%;
+  }
+
+  main {
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6) var(--space-20);
+  }
+
+  a {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .site-footer {
+    flex-shrink: 0;
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .footer-inner {
+    max-width: var(--content-width);
+    margin: 0 auto;
+  }
+
+  .footer-copy {
+    margin: 0 0 var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+    font-family: var(--font-body);
+  }
+
+  .footer-copy a {
+    color: var(--color-accent);
+  }
+
+  .footer-legal {
+    margin-top: var(--space-2);
+    margin-bottom: 0;
+  }
 </style>

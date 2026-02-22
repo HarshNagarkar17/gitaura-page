@@ -1,11 +1,495 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Section from "../components/Section.astro";
+import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout>
-	<Welcome />
+<Layout
+  title={`gitaura`}
+  description="gitaura — a Python utility for git commit visualization, file churn analysis, branch insights, and repository activity metrics."
+>
+  <article class="doc-page">
+    <header class="doc-header">
+      <h1 class="doc-title">Gitaura</h1>
+      <p class="doc-tagline">
+        A simple commit visualization and repo analysis tool for git
+      </p>
+    </header>
+
+    <div class="install-block">
+      <div class="install-inner">
+        <code class="install-cmd">pip install gitaura</code>
+        <button
+          type="button"
+          class="install-copy"
+          aria-label="Copy to clipboard"
+          data-copy="pip install gitaura"
+        >
+          Copy
+        </button>
+      </div>
+    </div>
+
+    <Section id="overview" title="Overview">
+      <p class="prose">
+        gitaura is a Python utility that uses <code>git log</code> to produce bar-graph
+        visualizations of commit activity. It also provides file analysis (churn,
+        hotspots, refactor density), branch insights (divergence, lifetime, merges),
+        and a "where do I work most?" directory map. Weekend commits are highlighted
+        in blue in the default view. Licensed under the MIT License.
+      </p>
+      <div class="code-block">
+        <pre><code>python gitaura.py [options]
+# or, if installed
+gitaura [options]</code></pre>
+      </div>
+    </Section>
+
+    <Section id="default-view" title="Default: commit bars">
+      <p class="prose">
+        With no extra flags, gitaura shows a bar graph of commits grouped by
+        period (default: month). Each bar length is proportional to the number
+        of commits, normalized within the visible range.
+      </p>
+    </Section>
+
+    <Section id="global-options" title="Global options">
+      <p class="prose">
+        These options apply to the default view and many other commands.
+      </p>
+      <dl class="option-list">
+        <dt><code>-p, --periodicity</code></dt>
+        <dd>Group by day, week, month, or year. Default: month.</dd>
+
+        <dt><code>-u, --author</code></dt>
+        <dd>Filter by author email (substring match).</dd>
+
+        <dt><code>-a, --after</code></dt>
+        <dd>Only include commits after this date (yyyy-mm-dd hh:mm).</dd>
+
+        <dt><code>-b, --before</code></dt>
+        <dd>Only include commits before this date (yyyy-mm-dd hh:mm).</dd>
+
+        <dt><code>-r, --reverse</code></dt>
+        <dd>Reverse the date order in the output.</dd>
+
+        <dt><code>-f, --fill</code></dt>
+        <dd>Fill missing dates with zero-commit bars on the graph.</dd>
+
+        <dt><code>--main</code></dt>
+        <dd>
+          Specify the main branch for divergence/lifetime/merge-timeline.
+          Default: main or master.
+        </dd>
+      </dl>
+    </Section>
+
+    <Section id="file-analysis" title="File analysis">
+      <h3 class="sub-title">File type breakdown (--files)</h3>
+      <p class="prose">
+        Shows file changes by type (JS, TS, MD, etc.) as percentages with a bar
+        visualization. Counts each file mention per commit in the history.
+      </p>
+      <div class="code-block">
+        <pre><code>gitaura --files
+gitaura --files -a "2024-01-01" -u "alice"</code></pre>
+      </div>
+
+      <h3 class="sub-title">File churn (--churn)</h3>
+      <p class="prose">
+        Ranks files by total lines changed (adds + dels). Shows the most
+        frequently modified files.
+      </p>
+      <div class="code-block">
+        <pre><code>gitaura --churn</code></pre>
+      </div>
+
+      <h3 class="sub-title">Hotspots (--hotspots)</h3>
+      <p class="prose">
+        Detects files with high churn <em>and</em> many contributors — likely areas
+        of shared or contentious work. Use <code>--min-churn</code> to set the minimum
+        churn (default: 50).
+      </p>
+      <div class="code-block">
+        <pre><code>gitaura --hotspots
+gitaura --hotspots --min-churn 100</code></pre>
+      </div>
+
+      <h3 class="sub-title">Refactor density (--refactor)</h3>
+      <p class="prose">
+        Estimates refactoring by treating balanced add/delete pairs as
+        refactor-like changes. Reports an overall repo percentage and per-file
+        density.
+      </p>
+      <div class="code-block">
+        <pre><code>gitaura --refactor</code></pre>
+      </div>
+    </Section>
+
+    <Section id="branch-features" title="Branch features">
+      <h3 class="sub-title">Active branches (--branches)</h3>
+      <p class="prose">
+        Lists branches ranked by most recent commit (e.g. "today", "3 days
+        ago").
+      </p>
+      <div class="code-block">
+        <pre><code>gitaura --branches</code></pre>
+      </div>
+
+      <h3 class="sub-title">Stale branches (--stale)</h3>
+      <p class="prose">
+        Shows branches with no commits in the last N days. Use <code
+          >--stale-days</code
+        > (default: 30).
+      </p>
+      <div class="code-block">
+        <pre><code>gitaura --stale
+gitaura --stale --stale-days 60</code></pre>
+      </div>
+
+      <h3 class="sub-title">Branch divergence (--divergence)</h3>
+      <p class="prose">Shows ahead/behind counts for each branch vs main.</p>
+      <div class="code-block">
+        <pre><code>gitaura --divergence
+gitaura --divergence --main develop</code></pre>
+      </div>
+
+      <h3 class="sub-title">Branch lifetime (--branch-lifetime)</h3>
+      <p class="prose">
+        Shows how long each merged branch lived (creation → merge).
+      </p>
+      <div class="code-block">
+        <pre><code>gitaura --branch-lifetime</code></pre>
+      </div>
+
+      <h3 class="sub-title">Merge timeline (--merges)</h3>
+      <p class="prose">Merge frequency over time (grouped by period).</p>
+      <div class="code-block">
+        <pre><code>gitaura --merges -p week</code></pre>
+      </div>
+
+      <h3 class="sub-title">Merge events (--merge-timeline)</h3>
+      <p class="prose">
+        Chronological list of merge events (date + branch name).
+      </p>
+      <div class="code-block">
+        <pre><code>gitaura --merge-timeline</code></pre>
+      </div>
+
+      <h3 class="sub-title">Compare branches (--compare A B)</h3>
+      <p class="prose">
+        Compares two branches: unique commits, files changed, lines
+        added/deleted, authors.
+      </p>
+      <div class="code-block">
+        <pre><code>gitaura --compare main feature-x</code></pre>
+      </div>
+    </Section>
+
+    <Section id="work-map" title="Work map (--work-map)">
+      <p class="prose">
+        "Where do I work most?" — directory breakdown by commit activity and
+        churn. Shows which folders you touch most often.
+      </p>
+      <div class="code-block">
+        <pre><code>gitaura --work-map
+gitaura --work-map -u "me@example.com"</code></pre>
+      </div>
+    </Section>
+
+    <Section id="quick-reference" title="Quick reference">
+      <table class="ref-table">
+        <thead>
+          <tr>
+            <th>Flag</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            ><td><code>-p day|week|month|year</code></td><td>Group by period</td
+            ></tr
+          >
+          <tr
+            ><td><code>-u &lt;author&gt;</code></td><td>Filter by author</td
+            ></tr
+          >
+          <tr
+            ><td><code>-a &lt;date&gt;</code></td><td>Commits after date</td
+            ></tr
+          >
+          <tr
+            ><td><code>-b &lt;date&gt;</code></td><td>Commits before date</td
+            ></tr
+          >
+          <tr><td><code>--files</code></td><td>File type breakdown</td></tr>
+          <tr><td><code>--churn</code></td><td>Most modified files</td></tr>
+          <tr
+            ><td><code>--hotspots</code></td><td
+              >High churn + many contributors</td
+            ></tr
+          >
+          <tr
+            ><td><code>--refactor</code></td><td>Refactor density estimate</td
+            ></tr
+          >
+          <tr
+            ><td><code>--min-churn N</code></td><td
+              >Min churn for hotspots (default: 50)</td
+            ></tr
+          >
+          <tr
+            ><td><code>--branches</code></td><td>Active branches by recency</td
+            ></tr
+          >
+          <tr
+            ><td><code>--stale</code></td><td
+              >Stale branches (no commits in N days)</td
+            ></tr
+          >
+          <tr
+            ><td><code>--stale-days N</code></td><td
+              >Stale threshold (default: 30)</td
+            ></tr
+          >
+          <tr
+            ><td><code>--divergence</code></td><td>Ahead/behind vs main</td></tr
+          >
+          <tr
+            ><td><code>--branch-lifetime</code></td><td
+              >Branch creation → merge duration</td
+            ></tr
+          >
+          <tr
+            ><td><code>--merges</code></td><td>Merge frequency timeline</td></tr
+          >
+          <tr
+            ><td><code>--merge-timeline</code></td><td
+              >Chronological merge events</td
+            ></tr
+          >
+          <tr
+            ><td><code>--compare A B</code></td><td>Compare two branches</td
+            ></tr
+          >
+          <tr
+            ><td><code>--work-map</code></td><td>Directory activity map</td></tr
+          >
+          <tr
+            ><td><code>--main &lt;branch&gt;</code></td><td
+              >Main branch for divergence/lifetime</td
+            ></tr
+          >
+        </tbody>
+      </table>
+    </Section>
+  </article>
 </Layout>
+
+<style>
+  .doc-page {
+    animation: fadeIn 0.5s ease-out;
+    max-width: 40rem;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .doc-back {
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+    display: inline-block;
+    margin-bottom: var(--space-6);
+  }
+
+  .doc-back:hover {
+    color: var(--color-fg);
+  }
+
+  .doc-header {
+    margin-bottom: var(--space-12);
+  }
+
+  .doc-title {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--space-2);
+    color: var(--color-fg);
+    line-height: 1.25;
+  }
+
+  .doc-tagline {
+    font-size: var(--text-base);
+    color: var(--color-muted);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .install-block {
+    margin-bottom: var(--space-10);
+  }
+
+  .install-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--color-accent-soft);
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+  }
+
+  .install-cmd {
+    flex: 1;
+    font-size: var(--text-base);
+    padding: 0;
+    background: none;
+  }
+
+  .install-copy {
+    flex-shrink: 0;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    font-family: var(--font-ui);
+    color: var(--color-fg);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .install-copy:hover {
+    background: var(--color-border);
+  }
+
+  .install-copy.copied {
+    color: var(--color-muted);
+  }
+
+  .prose {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.7;
+    color: var(--color-fg);
+    margin: 0 0 var(--space-6);
+  }
+
+  .prose code {
+    font-size: 0.9em;
+    padding: 0.15em 0.4em;
+    background: var(--color-accent-soft);
+    border-radius: 4px;
+  }
+
+  .option-list {
+    margin: 0 0 var(--space-6);
+  }
+
+  .option-list dt {
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    margin-top: var(--space-4);
+    color: var(--color-fg);
+  }
+
+  .option-list dt:first-child {
+    margin-top: 0;
+  }
+
+  .option-list dd {
+    margin: var(--space-1) 0 0 var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+    line-height: 1.6;
+  }
+
+  .sub-title {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 400;
+    margin: var(--space-8) 0 var(--space-3);
+    color: var(--color-fg);
+  }
+
+  .code-block {
+    margin: var(--space-4) 0 var(--space-6);
+  }
+
+  .code-block pre {
+    overflow-x: auto;
+    padding: var(--space-4);
+    background: var(--color-accent-soft);
+    border-radius: var(--radius);
+    margin: 0;
+    font-size: var(--text-sm);
+    font-family: var(--font-ui);
+    line-height: 1.5;
+  }
+
+  .code-block code {
+    background: none;
+    padding: 0;
+  }
+
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+
+  .ref-table th,
+  .ref-table td {
+    text-align: left;
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .ref-table th {
+    font-family: var(--font-ui);
+    font-weight: 500;
+    color: var(--color-fg);
+  }
+
+  .ref-table td {
+    color: var(--color-fg);
+  }
+
+  .ref-table td:first-child {
+    color: var(--color-accent);
+    font-family: var(--font-ui);
+  }
+
+  .ref-table code {
+    font-size: 0.85em;
+  }
+</style>
+
+<script>
+  document.querySelectorAll("[data-copy]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const text = btn.getAttribute("data-copy") ?? "";
+      try {
+        await navigator.clipboard.writeText(text);
+        const label = btn.textContent;
+        btn.textContent = "Copied";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = label;
+          btn.classList.remove("copied");
+        }, 1500);
+      } catch {
+        btn.textContent = "Failed";
+      }
+    });
+  });
+</script>
