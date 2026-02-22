@@ -15,6 +15,7 @@ const {
   ogImage,
 } = Astro.props;
 import { site } from "../data/portfolio";
+import Analytics from "@vercel/analytics/astro";
 
 const path = canonicalPath ?? Astro.url.pathname;
 const canonicalUrl = Astro.site ? new URL(path, Astro.site).href : null;
@@ -84,6 +85,7 @@ const ogImageUrl =
         </p>
       </div>
     </footer>
+    <Analytics />
   </body>
 </html>
 
