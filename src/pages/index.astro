@@ -27,6 +27,7 @@ import Layout from "../layouts/Layout.astro";
           Copy
         </button>
       </div>
+      <a href="https://pypi.org/project/gitaura/" target="_blank" rel="noopener noreferrer" class="pypi-link">View on PyPI →</a>
     </div>
 
     <Section id="overview" title="Overview">
@@ -336,6 +337,18 @@ gitaura --work-map -u "me@example.com"</code></pre>
 
   .install-block {
     margin-bottom: var(--space-10);
+  }
+
+  .pypi-link {
+    display: inline-block;
+    margin-top: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+    text-decoration: none;
+  }
+
+  .pypi-link:hover {
+    color: var(--color-accent);
   }
 
   .install-inner {
